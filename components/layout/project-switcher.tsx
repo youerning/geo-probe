@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ChevronsUpDown, Plus, Sparkles } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, Sparkles, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import {
 import { useAppStore } from "@/lib/hooks/use-app-store";
 import { useProjects } from "@/lib/hooks/use-data";
 import { cn } from "cn";
+import { DeleteProjectDialog } from "./delete-project-dialog";
 import { ProjectDialog } from "./project-dialog";
 
 export function ProjectSwitcher({ compact = false }: { compact?: boolean }) {
@@ -23,6 +24,7 @@ export function ProjectSwitcher({ compact = false }: { compact?: boolean }) {
   const selectedProjectId = useAppStore((state) => state.selectedProjectId);
   const setSelectedProjectId = useAppStore((state) => state.setSelectedProjectId);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const selected = projects?.find((project) => project.id === selectedProjectId);
 
@@ -93,10 +95,25 @@ export function ProjectSwitcher({ compact = false }: { compact?: boolean }) {
             <Plus className="size-3.5" />
             新建项目
           </DropdownMenuItem>
+          {selected && (
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setDeleteOpen(true)}
+              className="gap-2"
+            >
+              <Trash2 className="size-3.5" />
+              删除当前项目
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
       <ProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <DeleteProjectDialog
+        project={selected ?? null}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+      />
     </>
   );
 }

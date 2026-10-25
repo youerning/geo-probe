@@ -1,6 +1,14 @@
 import type { Target } from "@/lib/types";
 import { uniq } from "@/lib/utils/array";
 
+export const MAX_COMPETITORS = 5;
+
+export type CompetitorDraft = {
+  label: string;
+  aliases: string;
+  domains: string;
+};
+
 export function splitList(value?: string | null): string[] {
   if (!value) return [];
   return uniq(
@@ -11,29 +19,30 @@ export function splitList(value?: string | null): string[] {
   );
 }
 
-export function parseCompetitors(value: string): Target[] {
-  return value
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .slice(0, 5)
-    .map((line, index) => {
-      const [rawLabel, rawAliases, rawDomains] = line.split("|").map((part) => part?.trim() ?? "");
-      const label = rawLabel || `竞品 ${String.fromCharCode(65 + index)}`;
-      return {
-        id: `comp_${index + 1}`,
-        kind: "competitor" as const,
-        label,
-        aliases: uniq([label, ...splitList(rawAliases)]),
-        domains: splitList(rawDomains),
-      };
-    });
+export function targetsToDrafts(targets: Target[]): CompetitorDraft[] {
+  return targets.slice(0, MAX_COMPETITORS).map((target) => ({
+    label: target.label,
+    aliases: target.aliases.filter((alias) => alias !== target.label).join(", "),
+    domains: target.domains.join(", "),
+  }));
 }
 
-export function formatCompetitors(competitors: Target[]): string {
-  return competitors
-    .map((competitor) => `${competitor.label} | ${competitor.aliases.join(", ")} | ${competitor.domains.join(", ")}`)
-    .join("\n");
+export function draftsToTargets(drafts: CompetitorDraft[]): Target[] {
+  return drafts
+    .map((draft) => ({ ...draft, label: draft.label.trim() }))
+    .filter((draft) => draft.label.length > 0)
+    .slice(0, MAX_COMPETITORS)
+    .map((draft, index) => ({
+      id: `comp_${index + 1}`,
+      kind: "competitor" as const,
+      label: draft.label,
+      aliases: uniq([draft.label, ...splitList(draft.aliases)]),
+      domains: splitList(draft.domains),
+    }));
+}
+
+export function formatBrandAliases(brand: Target): string {
+  return uniq(brand.aliases.filter((alias) => alias !== brand.label)).join("\n");
 }
 
 export function buildBrandTarget(label: string, aliases: string, domains: string): Target {

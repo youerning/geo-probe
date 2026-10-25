@@ -15,10 +15,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { CompetitorEditor } from "@/components/competitor-editor";
 import { createProject } from "@/lib/db/repositories";
 import { useAppStore } from "@/lib/hooks/use-app-store";
 import type { Project } from "@/lib/types";
-import { buildBrandTarget, parseCompetitors } from "@/lib/project-utils";
+import { buildBrandTarget, draftsToTargets, type CompetitorDraft } from "@/lib/project-utils";
 
 export function ProjectDialog({
   open,
@@ -34,7 +35,7 @@ export function ProjectDialog({
   const [brand, setBrand] = useState("");
   const [aliases, setAliases] = useState("");
   const [domains, setDomains] = useState("");
-  const [competitors, setCompetitors] = useState("");
+  const [competitors, setCompetitors] = useState<CompetitorDraft[]>([]);
   const [saving, setSaving] = useState(false);
 
   const reset = () => {
@@ -42,7 +43,7 @@ export function ProjectDialog({
     setBrand("");
     setAliases("");
     setDomains("");
-    setCompetitors("");
+    setCompetitors([]);
   };
 
   const handleCreate = async () => {
@@ -59,7 +60,7 @@ export function ProjectDialog({
       const project = await createProject({
         name: name.trim() || `${brandLabel} GEO 监测`,
         brand: brandTarget,
-        competitors: parseCompetitors(competitors),
+        competitors: draftsToTargets(competitors),
         locale: "zh-CN",
         isDemo: false,
       });
@@ -78,7 +79,7 @@ export function ProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>新建项目</DialogTitle>
           <DialogDescription>
@@ -128,17 +129,12 @@ export function ProjectDialog({
             </p>
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="competitors">竞品（每行一个）</Label>
-            <Textarea
-              id="competitors"
+            <div className="text-sm font-medium">竞品</div>
+            <CompetitorEditor
               value={competitors}
-              onChange={(event) => setCompetitors(event.target.value)}
-              placeholder={"竞品 A | 别名1,别名2 | 域名\n竞品 B | 别名1,别名2 | 域名"}
-              rows={4}
+              onChange={setCompetitors}
+              idPrefix="new-project-competitor"
             />
-            <p className="text-xs text-muted-foreground">
-              格式：显示名 | 别名（逗号分隔） | 域名（可选）。最多 5 个。
-            </p>
           </div>
         </div>
 

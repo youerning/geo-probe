@@ -29,6 +29,8 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { CompetitorEditor } from "@/components/competitor-editor";
+import { DeleteProjectDialog } from "@/components/layout/delete-project-dialog";
 import { PageHeader } from "@/components/page-header";
 import {
   APP_VERSION,
@@ -48,7 +50,13 @@ import { useApiKey } from "@/lib/hooks/use-api-key";
 import { useAppSettings } from "@/lib/hooks/use-app-settings";
 import { useAppStore } from "@/lib/hooks/use-app-store";
 import { useProject, useProjects } from "@/lib/hooks/use-data";
-import { buildBrandTarget, formatCompetitors, parseCompetitors } from "@/lib/project-utils";
+import {
+  buildBrandTarget,
+  draftsToTargets,
+  formatBrandAliases,
+  targetsToDrafts,
+  type CompetitorDraft,
+} from "@/lib/project-utils";
 import { testDeepSeekKey } from "@/lib/providers/deepseek";
 
 function SectionCard({
@@ -109,8 +117,9 @@ export default function SettingsPage() {
   const [brandLabel, setBrandLabel] = useState("");
   const [brandAliases, setBrandAliases] = useState("");
   const [brandDomains, setBrandDomains] = useState("");
-  const [competitors, setCompetitors] = useState("");
+  const [competitors, setCompetitors] = useState<CompetitorDraft[]>([]);
   const [savingProject, setSavingProject] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -140,9 +149,9 @@ export default function SettingsPage() {
     if (!project) return;
     setProjectName(project.name);
     setBrandLabel(project.brand.label);
-    setBrandAliases(project.brand.aliases.join("\n"));
+    setBrandAliases(formatBrandAliases(project.brand));
     setBrandDomains(project.brand.domains.join(", "));
-    setCompetitors(formatCompetitors(project.competitors));
+    setCompetitors(targetsToDrafts(project.competitors));
   }, [project]);
 
   const handleSaveKey = () => {
@@ -200,7 +209,7 @@ export default function SettingsPage() {
       await updateProject(project.id, {
         name: projectName.trim() || `${brandLabel.trim()} GEO 监测`,
         brand: buildBrandTarget(brandLabel, brandAliases, brandDomains),
-        competitors: parseCompetitors(competitors),
+        competitors: draftsToTargets(competitors),
       });
       toast.success("项目设置已保存。");
     } catch (error) {
@@ -533,24 +542,25 @@ export default function SettingsPage() {
                   placeholder="yuangouchang.com"
                 />
               </div>
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label htmlFor="competitors-setting">竞品</Label>
-                <Textarea
-                  id="competitors-setting"
+              <div className="space-y-2 sm:col-span-2">
+                <div className="text-sm font-medium">竞品</div>
+                <CompetitorEditor
                   value={competitors}
-                  onChange={(event) => setCompetitors(event.target.value)}
-                  rows={4}
-                  placeholder={"竞品 A | 别名1,别名2 | 域名"}
+                  onChange={setCompetitors}
+                  idPrefix="settings-competitor"
                 />
-                <p className="text-[11px] text-muted-foreground">
-                  格式：显示名 | 别名（逗号分隔） | 域名（可选）。最多 5 个。
-                </p>
               </div>
             </div>
-            <Button onClick={handleSaveProject} disabled={savingProject}>
-              {savingProject && <Loader2 className="animate-spin" />}
-              保存项目设置
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button onClick={handleSaveProject} disabled={savingProject}>
+                {savingProject && <Loader2 className="animate-spin" />}
+                保存项目设置
+              </Button>
+              <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
+                <Trash2 />
+                删除项目
+              </Button>
+            </div>
           </>
         )}
       </SectionCard>
@@ -641,6 +651,12 @@ export default function SettingsPage() {
         </div>
 
       </SectionCard>
+
+      <DeleteProjectDialog
+        project={project ?? null}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+      />
     </div>
   );
 }
