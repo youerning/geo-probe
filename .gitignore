@@ -42,3 +42,6 @@ next-env.d.ts
 
 # playwright-cli artifacts
 .playwright-cli/
+
+# keep the documented example env file
+!.env.example
