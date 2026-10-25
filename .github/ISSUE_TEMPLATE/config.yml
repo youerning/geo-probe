@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Live demo
+    url: https://geo-probe.youerning.top
+    about: Try the demo before opening an issue.
+  - name: Documentation
+    url: https://github.com/youerning/geo-probe#readme
+    about: Quick start, deploy, metrics, and limitations.

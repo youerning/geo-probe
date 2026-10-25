@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest a feature or provider
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the GEO workflow pain, not only the UI change.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How should it work? Include metric definitions if relevant.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: This is a new provider (豆包 / 千问 / 元宝 / other)
+        - label: This changes the data model or storage
+        - label: This changes the analytics/metric definitions
+        - label: I can help implement it

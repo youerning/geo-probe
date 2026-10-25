@@ -1,0 +1,50 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. **Do not paste API keys, exported data, or personal information.**
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Include the page, the action, and what you expected.
+      placeholder: I clicked “运行探测” and…
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      placeholder: v0.1.0 or commit SHA
+  - type: input
+    id: environment
+    attributes:
+      label: Browser / OS
+      placeholder: Chrome 141 / macOS 15
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors / screenshots
+      description: Paste errors or attach screenshots. Redact keys and personal data.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I removed API keys, personal data, and private exported data from this report.
+          required: true
+        - label: I searched existing issues.
+          required: true

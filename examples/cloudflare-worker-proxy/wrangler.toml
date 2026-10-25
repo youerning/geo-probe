@@ -1,0 +1,10 @@
+name = "geo-probe-proxy"
+main = "worker.ts"
+compatibility_date = "2026-10-01"
+
+# Set the secret with:
+#   wrangler secret put DEEPSEEK_API_KEY
+#
+# Optional: restrict which site may call the proxy.
+# [vars]
+# ALLOWED_ORIGIN = "https://geo-probe.youerning.top"
