@@ -30,6 +30,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
@@ -271,25 +272,27 @@ export function RunDetail({
                 }
               />
               <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuLabel>导出这个批次</DropdownMenuLabel>
-                <DropdownMenuItem
-                  onClick={() => downloadRunJson({ run, project, prompts: effectivePrompts, probes })}
-                >
-                  <FileJson className="size-3.5" />
-                  JSON（完整数据）
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => downloadRunProbesCsv(run, probes)}>
-                  <FileSpreadsheet className="size-3.5" />
-                  探测明细 CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => downloadRunSourcesCsv(run, probes)}>
-                  <FileSpreadsheet className="size-3.5" />
-                  来源明细 CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={exportMarkdown}>
-                  <FileText className="size-3.5" />
-                  Markdown 报告
-                </DropdownMenuItem>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>导出这个批次</DropdownMenuLabel>
+                  <DropdownMenuItem
+                    onClick={() => downloadRunJson({ run, project, prompts: effectivePrompts, probes })}
+                  >
+                    <FileJson className="size-3.5" />
+                    JSON（完整数据）
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadRunProbesCsv(run, probes)}>
+                    <FileSpreadsheet className="size-3.5" />
+                    探测明细 CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadRunSourcesCsv(run, probes)}>
+                    <FileSpreadsheet className="size-3.5" />
+                    来源明细 CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={exportMarkdown}>
+                    <FileText className="size-3.5" />
+                    Markdown 报告
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>

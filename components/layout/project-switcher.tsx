@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -62,29 +63,31 @@ export function ProjectSwitcher({ compact = false }: { compact?: boolean }) {
           }
         />
         <DropdownMenuContent align="start" className="w-64">
-          <DropdownMenuLabel>项目</DropdownMenuLabel>
-          {projects?.map((project) => (
-            <DropdownMenuItem
-              key={project.id}
-              onClick={() => setSelectedProjectId(project.id)}
-              className="gap-2"
-            >
-              <span className="flex size-6 items-center justify-center rounded-md bg-muted text-[11px] font-semibold">
-                {project.brand.label.slice(0, 1)}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm">{project.name}</span>
-                <span className="block truncate text-[11px] text-muted-foreground">
-                  {project.brand.label}
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>项目</DropdownMenuLabel>
+            {projects?.map((project) => (
+              <DropdownMenuItem
+                key={project.id}
+                onClick={() => setSelectedProjectId(project.id)}
+                className="gap-2"
+              >
+                <span className="flex size-6 items-center justify-center rounded-md bg-muted text-[11px] font-semibold">
+                  {project.brand.label.slice(0, 1)}
                 </span>
-              </span>
-              {project.isDemo && <Sparkles className="size-3 text-chart-1" />}
-              {project.id === selectedProjectId && <Check className="size-3.5 text-primary" />}
-            </DropdownMenuItem>
-          ))}
-          {!projects?.length && (
-            <div className="px-2 py-3 text-xs text-muted-foreground">还没有项目。</div>
-          )}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm">{project.name}</span>
+                  <span className="block truncate text-[11px] text-muted-foreground">
+                    {project.brand.label}
+                  </span>
+                </span>
+                {project.isDemo && <Sparkles className="size-3 text-chart-1" />}
+                {project.id === selectedProjectId && <Check className="size-3.5 text-primary" />}
+              </DropdownMenuItem>
+            ))}
+            {!projects?.length && (
+              <div className="px-2 py-3 text-xs text-muted-foreground">还没有项目。</div>
+            )}
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setDialogOpen(true)} className="gap-2">
             <Plus className="size-3.5" />
