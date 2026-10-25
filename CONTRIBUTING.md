@@ -14,6 +14,7 @@ Node.js 20+ and pnpm 10+ are recommended.
 ## Before you start
 
 - Read [`CONTEXT.md`](CONTEXT.md). Use its vocabulary in code, UI copy, and issues.
+- Read [`docs/how-it-works.md`](docs/how-it-works.md) for the end-to-end pipeline and metric definitions.
 - Read the ADRs in [`docs/adr`](docs/adr) before changing storage, the provider pipeline, or the source/citation model.
 - **Never commit an API key, `.env`, or exported data containing personal information.**
 

@@ -181,7 +181,7 @@ Prompt
 - 默认 `deepseek-v4-flash`。DeepSeek 文档写 `web_search` 只支持 `deepseek-v4-pro`，但 Anthropic 端点实测 Flash 可用；设置里可切 Pro。
 - 严格区分三件事：**Mention（回答里提到品牌）**、**Retrieved Source（搜索工具返回的网页）**、**Answer Link（回答里显式写的 URL）**。三者不是一回事。
 
-更多设计记录见 [`CONTEXT.md`](CONTEXT.md) 和 [`docs/adr`](docs/adr)。
+完整链路、指标公式和实现细节见 [`docs/how-it-works.md`](docs/how-it-works.md)；术语见 [`CONTEXT.md`](CONTEXT.md)，设计决策见 [`docs/adr`](docs/adr)。
 
 ## 指标口径
 
