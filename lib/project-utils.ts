@@ -1,7 +1,8 @@
 import type { Target } from "@/lib/types";
 import { uniq } from "@/lib/utils/array";
 
-export function splitList(value: string): string[] {
+export function splitList(value?: string | null): string[] {
+  if (!value) return [];
   return uniq(
     value
       .split(/[\n,，、;；]+/)
