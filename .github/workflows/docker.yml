@@ -8,6 +8,11 @@ on:
   push:
     branches: [main]
     tags: ["v*"]
+    # 纯文档/CI 配置改动不重建镜像；tag push 不受 path 过滤影响
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".github/workflows/ci.yml"
   workflow_dispatch:
 
 permissions:

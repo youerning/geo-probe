@@ -59,3 +59,27 @@ GEO Probe：纯静态、本地优先的 GEO 品牌提及检测工具。Next.js 1
 - `NEXT_PUBLIC_BASE_PATH` 也会拼到示例数据 URL；改 basePath 后本地和 Workers/Pages 都要验证。
 - Docker 镜像 `youerning/geo-probe`（备用 `ghcr.io/youerning/geo-probe`）由 `.github/workflows/docker.yml` 在 `main` 和 `v*` tag 上双架构发布；运行时只是 nginx + `out/`，`docker/nginx.conf` 负责 trailingSlash、404 和安全头。
 - 本地 `docker push` 到 Docker Hub 常被网络 reset，发布以 GitHub Actions 为准（本机能 pull/build/run）。
+
+## 发版
+
+版本号手工维护，三处必须同步：`package.json` 的 `version`、`lib/config.ts` 的 `APP_VERSION`；改 IndexedDB 表结构时再加 `SCHEMA_VERSION` 和 Dexie 新 version。
+
+语义化版本：修 bug → patch，新功能 → minor，破坏兼容 → major。0.x 阶段允许 minor 带破坏性变更，但要在 README 写清楚。
+
+1. 本地全绿：`pnpm lint && pnpm typecheck && pnpm test && pnpm build`。
+2. 提交并推 `main`：`git commit -m "chore(release): vX.Y.Z"` → `git push origin main`。产出 `latest`、`edge`、`sha-xxxxxxx`。
+3. 打 annotated tag 并推送：`git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z`。产出 `X.Y.Z`、`X.Y`、`latest`；Docker Hub 和 GHCR 各一套，都是 `linux/amd64` + `linux/arm64`。
+4. 等 `Docker` workflow 变绿（约 2–3 分钟）再验证：
+
+```bash
+docker pull youerning/geo-probe:X.Y.Z
+docker pull ghcr.io/youerning/geo-probe:X.Y.Z    # 匿名也应成功
+docker run --rm -p 8080:80 youerning/geo-probe:X.Y.Z
+curl -sI http://127.0.0.1:8080/ | grep -i 'content-security-policy'
+```
+
+- 不要在本地 `docker push`：本机到 `registry-1.docker.io` 会被 reset，发布只走 Actions。
+- 只有 `X.Y.Z` 这类不可变标签可信；`latest` 跟 `main` 走，未打 tag 的提交也会覆盖它。
+- `v*` tag 发了就别删了重打，同名版本内容必须一致；发错了就发下一个 patch。
+- 纯文档改动不触发镜像构建（workflow 里 `paths-ignore` 了 `**.md`、`docs/**`、`ci.yml`），tag push 不受此限制。
+- GHCR 包必须保持 public，它是 Docker Hub 拉不动时的备用源。
