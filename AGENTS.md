@@ -48,6 +48,8 @@ GEO Probe：纯静态、本地优先的 GEO 品牌提及检测工具。Next.js 1
 
 ## 部署
 
-- Cloudflare Pages 是主部署：build `pnpm build`，output `out`，Node 22；`public/_headers` 生效。
+- Cloudflare Workers（静态资源）是当前部署：`wrangler.jsonc` 的 `assets.directory` 指向 `out`；CF Build command `pnpm build`，Deploy command `npx wrangler deploy`。
+- Cloudflare Pages 仍可用：build `pnpm build`，output `out`，Node 22；`public/_headers` 生效。
+- 禁止对纯静态导出运行 `@opennextjs/cloudflare migrate`、引入 `open-next.config.ts` 或把 `output` 改成 `standalone`；项目不会生成 `.next/standalone`，OpenNext 会报 `pages-manifest.json` ENOENT。
 - GitHub Pages workflow 是手动触发；它会把 `NEXT_PUBLIC_BASE_PATH` 设为仓库名。
-- `NEXT_PUBLIC_BASE_PATH` 也会拼到示例数据 URL；改 basePath 后本地和 Pages 都要验证。
+- `NEXT_PUBLIC_BASE_PATH` 也会拼到示例数据 URL；改 basePath 后本地和 Workers/Pages 都要验证。

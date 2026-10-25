@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "geo-probe",
+  "compatibility_date": "2026-10-19",
+  "assets": {
+    "directory": "./out",
+    "html_handling": "force-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

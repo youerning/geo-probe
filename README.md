@@ -43,7 +43,7 @@ GEO Probe 把这套动作变成：
 - **回答链接**：把 AI 回答里显式写出的 URL 抓出来，标记是否在检索来源中。
 - **推荐榜**：从回答的编号/列表里解析“第几家推荐了你”，以及 AI 还推荐了哪些未追踪公司。
 - **本地优先**：项目、提示词、批次、回答、来源全部在浏览器 IndexedDB；API Key 不进导出、不进仓库。
-- **一键静态部署**：`out/` 可以放到 Cloudflare Pages、Vercel、GitHub Pages、Netlify 或任意静态服务器。
+- **一键静态部署**：`out/` 可以放到 Cloudflare Workers/Pages、Vercel、GitHub Pages、Netlify 或任意静态服务器。
 
 ![来源分析](docs/screenshots/run-sources.png)
 
@@ -74,12 +74,24 @@ pnpm dev
 
 | 平台 | 做法 |
 | --- | --- |
+| **Cloudflare Workers** | 连接仓库；Build command `pnpm build`，Deploy command `npx wrangler deploy`；仓库内 `wrangler.jsonc` 已把 `out/` 声明为静态资源。 |
 | **Cloudflare Pages** | 连接仓库；构建命令 `pnpm build`，输出目录 `out`，Node 22；绑定自定义域名即可。`public/_headers` 会自动生效。 |
 | **Vercel** | 导入仓库，框架选 Next.js，无需环境变量。`vercel.json` 已带安全头。 |
 | **GitHub Pages** | 仓库 Settings → Pages → Source 选 GitHub Actions；手动运行 `Deploy to GitHub Pages` workflow（已处理 `basePath`）。 |
 | **任意静态服务器** | `pnpm build` 后把 `out/` 传上去。需要把 `/xxx` 映射到 `/xxx/index.html`（项目已开 `trailingSlash`）。 |
 
-### Cloudflare Pages 详细步骤
+### Cloudflare Workers（静态资源）详细步骤
+
+1. Cloudflare Dashboard → Workers & Pages → Create → Workers → Connect to Git；
+2. 选择 `youerning/geo-probe`；
+3. Build command：`pnpm build`；Deploy command：`npx wrangler deploy`；
+4. Root directory 保持仓库根目录，不需要环境变量；
+5. 仓库里的 `wrangler.jsonc` 已声明 `assets.directory = "./out"`，`public/_headers` 会随构建复制到 `out/`；
+6. 部署完成后在 Worker → Settings → Domains & Routes 绑定 `geo-probe.youerning.top`。
+
+> 本项目是纯静态导出，**不要**运行 `@opennextjs/cloudflare migrate`，也不要把 `next.config.ts` 的 `output` 改成 `standalone`。Cloudflare 的 Next.js 自动迁移会按 SSR 构建，去找 `.next/standalone/.../pages-manifest.json`，这个项目不会生成该文件。
+
+### Cloudflare Pages（备选）
 
 1. Cloudflare Dashboard → Workers & Pages → Create → Pages → Connect to Git；
 2. 选择 `youerning/geo-probe`；
@@ -234,7 +246,7 @@ pnpm dev
 
 Open `http://localhost:3000`, load the demo data (no API key needed), or create a project and add your DeepSeek API key in Settings.
 
-Deploy the static `out/` folder anywhere: Cloudflare Pages, Vercel, GitHub Pages, Netlify, or any static host.
+Deploy the static `out/` folder anywhere: Cloudflare Workers/Pages, Vercel, GitHub Pages, Netlify, or any static host.
 
 **Important**: “citation” in this project means **brand mention in the answer**, not a sentence-level web citation. Retrieved sources are shown separately from answer links. Results vary between runs; the default is 3 repeats per prompt.
 
