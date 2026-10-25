@@ -1,0 +1,28 @@
+# 本地密钥绝不能进构建上下文（仓库根目录就有 .env）
+.env
+.env.*
+!.env.example
+
+# 依赖与构建产物：镜像里重新装、重新构建
+node_modules
+out
+.next
+.wrangler
+.vercel
+coverage
+*.tsbuildinfo
+
+# 与构建无关，缩小上下文
+.git
+.github
+.playwright-cli
+docs
+examples
+scripts
+*.log
+.DS_Store
+README.md
+CONTRIBUTING.md
+SECURITY.md
+AGENTS.md
+CONTEXT.md

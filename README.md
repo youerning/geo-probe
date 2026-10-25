@@ -9,6 +9,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org)
 [![DeepSeek](https://img.shields.io/badge/DeepSeek-V4-4f46e5.svg)](https://api-docs.deepseek.com)
+[![Docker](https://img.shields.io/badge/docker-youerning%2Fgeo--probe-blue?logo=docker)](https://hub.docker.com/r/youerning/geo-probe)
 [![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 [在线演示](https://geo-probe.youerning.top) · [快速开始](#快速开始) · [部署](#部署) · [English quickstart](#english-quickstart)
@@ -51,7 +52,15 @@ GEO Probe 把这套动作变成：
 
 ## 快速开始
 
-需要 Node.js 20+ 和 pnpm。
+不想装 Node.js？直接用镜像：
+
+```bash
+docker run -d --name geo-probe -p 8080:80 --restart unless-stopped youerning/geo-probe:latest
+```
+
+打开 `http://localhost:8080`，后面的步骤一样。镜像只是 nginx + 构建好的静态文件，没有后端、不需要环境变量或数据卷。更多说明见 [Docker（自托管）](#docker自托管)。
+
+或者从源码跑，需要 Node.js 20+ 和 pnpm。
 
 ```bash
 pnpm install
@@ -74,11 +83,55 @@ pnpm dev
 
 | 平台 | 做法 |
 | --- | --- |
+| **Docker** | 一行启动：`docker run -d -p 8080:80 youerning/geo-probe:latest`。镜像 = nginx + 静态文件，无环境变量、无数据卷。详见 [Docker（自托管）](#docker自托管)。 |
 | **Cloudflare Workers** | 连接仓库；Build command `pnpm build`，Deploy command `npx wrangler deploy`；仓库内 `wrangler.jsonc` 已把 `out/` 声明为静态资源。 |
 | **Cloudflare Pages** | 连接仓库；构建命令 `pnpm build`，输出目录 `out`，Node 22；绑定自定义域名即可。`public/_headers` 会自动生效。 |
 | **Vercel** | 导入仓库，框架选 Next.js，无需环境变量。`vercel.json` 已带安全头。 |
 | **GitHub Pages** | 仓库 Settings → Pages → Source 选 GitHub Actions；手动运行 `Deploy to GitHub Pages` workflow（已处理 `basePath`）。 |
 | **任意静态服务器** | `pnpm build` 后把 `out/` 传上去。需要把 `/xxx` 映射到 `/xxx/index.html`（项目已开 `trailingSlash`）。 |
+
+### Docker（自托管）
+
+镜像 `youerning/geo-probe` 支持 `linux/amd64` 和 `linux/arm64`，内容只有 nginx 和构建好的 `out/`：
+
+```bash
+docker run -d --name geo-probe \
+  -p 8080:80 \
+  --restart unless-stopped \
+  youerning/geo-probe:latest
+```
+
+或者用仓库里的 [`compose.yaml`](compose.yaml)：
+
+```bash
+docker compose up -d     # 启动
+docker compose pull      # 升级
+docker compose up -d
+```
+
+Docker Hub 拉不动时用 GHCR 备用地址：`ghcr.io/youerning/geo-probe:latest`。
+
+不用 compose 时这样升级：
+
+```bash
+docker pull youerning/geo-probe:latest
+docker rm -f geo-probe
+docker run -d --name geo-probe -p 8080:80 --restart unless-stopped youerning/geo-probe:latest
+```
+
+自己构建：
+
+```bash
+docker build -t geo-probe:dev .
+docker run --rm -p 8080:80 geo-probe:dev
+```
+
+几个必须知道的行为：
+
+- **镜像里没有 API Key。** 真实探测要在「设置」里填自己的 DeepSeek Key，或填自建代理地址（见下一节）。
+- **数据存在浏览器的 IndexedDB 里。** 容器是无状态的，不用挂卷，也没有服务端数据可备份；换浏览器、换设备、清站点数据都会看到不同或空的数据。要留存请在应用里导出。
+- **自托管实例的 sitemap / canonical 仍指向演示站** `geo-probe.youerning.top`（硬编码在 `app/layout.tsx` 和 `app/sitemap.ts`），`robots.txt` 同理。这是已知限制，不影响功能。
+- 局域网 `http://192.168.x.x:8080` 可以直接用；公网部署建议套一层 HTTPS 反代。要反代到子路径得自己 build：`docker build --build-arg NEXT_PUBLIC_BASE_PATH=/geo -t geo-probe:dev .`。
 
 ### Cloudflare Workers（静态资源）详细步骤
 
@@ -246,7 +299,7 @@ pnpm dev
 
 Open `http://localhost:3000`, load the demo data (no API key needed), or create a project and add your DeepSeek API key in Settings.
 
-Deploy the static `out/` folder anywhere: Cloudflare Workers/Pages, Vercel, GitHub Pages, Netlify, or any static host.
+Deploy the static `out/` folder anywhere: Cloudflare Workers/Pages, Vercel, GitHub Pages, Netlify, or any static host. Or run the published image: `docker run -d -p 8080:80 youerning/geo-probe:latest` (also on `ghcr.io/youerning/geo-probe`).
 
 **Important**: “citation” in this project means **brand mention in the answer**, not a sentence-level web citation. Retrieved sources are shown separately from answer links. Results vary between runs; the default is 3 repeats per prompt.
 

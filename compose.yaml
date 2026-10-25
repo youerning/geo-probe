@@ -1,0 +1,9 @@
+services:
+  geo-probe:
+    image: youerning/geo-probe:latest
+    # 想直接用本仓库源码构建，把上面一行换成：
+    # build: .
+    container_name: geo-probe
+    ports:
+      - "8080:80"
+    restart: unless-stopped

@@ -10,6 +10,7 @@ GEO Probe：纯静态、本地优先的 GEO 品牌提及检测工具。Next.js 1
 - `pnpm test lib/analysis/mentions.test.ts` — 跑单个测试文件。
 - `pnpm preview` — 预览静态导出结果（`pnpm dlx serve out`）。
 - `pnpm demo:generate` — 重新生成 `public/demo/demo-data.json`；读取 `.env` 的 `DEEPSEEK_API_KEY`，约 30 次真实调用、$0.3。
+- `docker build -t geo-probe:dev .` → `docker run --rm -p 8080:80 geo-probe:dev` — 验证镜像（nginx 托管 `out/`）。
 
 ## 架构入口
 
@@ -45,6 +46,9 @@ GEO Probe：纯静态、本地优先的 GEO 品牌提及检测工具。Next.js 1
 - `APP_VERSION` 在 `lib/config.ts`，和 `package.json` 的 version 各有一份，发版时一起改。
 - 改 IndexedDB 表结构时用 Dexie 新 version，别改旧 version；同步 `SCHEMA_VERSION`。
 - 示例数据通过 `fetch` 加载，不要 `import` 进客户端 bundle。
+- 改 `Dockerfile` / `docker/nginx.conf` 后必须重新 `docker build` 并验证：nginx 的 `add_header` 只要出现在 location 里就会覆盖 server 级安全头（所以缓存用 `expires`）；`absolute_redirect off` 不能删，否则 `-p 8080:80` 时 `/runs` → `/runs/` 的 301 会丢掉端口。
+- `.env` 必须在 `.dockerignore` 里；镜像内不得出现任何 Key（可用 `docker run --rm --entrypoint sh <img> -c 'grep -rl sk- /usr/share/nginx/html'` 检查）。
+- Docker 镜像里的 nginx 配置、静态产物由 `docker/nginx.conf` 和 `out/` 决定；改安全头时要同时改 `public/_headers`、`vercel.json`，三处保持一致。
 
 ## 部署
 
@@ -53,3 +57,5 @@ GEO Probe：纯静态、本地优先的 GEO 品牌提及检测工具。Next.js 1
 - 禁止对纯静态导出运行 `@opennextjs/cloudflare migrate`、引入 `open-next.config.ts` 或把 `output` 改成 `standalone`；项目不会生成 `.next/standalone`，OpenNext 会报 `pages-manifest.json` ENOENT。
 - GitHub Pages workflow 是手动触发；它会把 `NEXT_PUBLIC_BASE_PATH` 设为仓库名。
 - `NEXT_PUBLIC_BASE_PATH` 也会拼到示例数据 URL；改 basePath 后本地和 Workers/Pages 都要验证。
+- Docker 镜像 `youerning/geo-probe`（备用 `ghcr.io/youerning/geo-probe`）由 `.github/workflows/docker.yml` 在 `main` 和 `v*` tag 上双架构发布；运行时只是 nginx + `out/`，`docker/nginx.conf` 负责 trailingSlash、404 和安全头。
+- 本地 `docker push` 到 Docker Hub 常被网络 reset，发布以 GitHub Actions 为准（本机能 pull/build/run）。
