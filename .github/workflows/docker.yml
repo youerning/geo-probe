@@ -65,6 +65,47 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=short,prefix=sha-
 
+      # 先单独构建 amd64 并加载到本地，发布前确认基础镜像没有退化。
+      - name: Build amd64 for verification
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: geo-probe:verify
+          cache-from: type=gha
+          provenance: false
+
+      - name: Verify nginx version and protocols
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="$(docker run --rm --entrypoint nginx geo-probe:verify -v 2>&1 | awk '{print $3}' | cut -d/ -f2)"
+          echo "nginx version: ${version}"
+          if [ -z "${version}" ]; then
+            echo "::error::could not determine the nginx version"
+            exit 1
+          fi
+          # nginx2root 及 CVE-2026-125283 在 1.31.9 修复；降级直接让发布失败。
+          if [ "$(printf '%s\n' "1.31.9" "${version}" | sort -V | head -n1)" != "1.31.9" ]; then
+            echo "::error::nginx ${version} is older than 1.31.9 (nginx2root fixes)"
+            exit 1
+          fi
+
+          # 这个镜像只发静态文件，不应该出现 HTTP/2 或 HTTP/3。
+          docker run --rm --entrypoint nginx geo-probe:verify -T 2>&1 | tee /tmp/nginx-effective.conf
+          if grep -Eq '^[[:space:]]*http2[[:space:]]+on[[:space:]]*;' /tmp/nginx-effective.conf \
+            || grep -Eq '^[[:space:]]*listen[^;]*[[:space:]]http2([[:space:];]|$)' /tmp/nginx-effective.conf; then
+            echo "::error::HTTP/2 must stay disabled in this static image"
+            exit 1
+          fi
+          if grep -Eq '^[[:space:]]*http3[[:space:]]+on[[:space:]]*;' /tmp/nginx-effective.conf \
+            || grep -Eq '^[[:space:]]*listen[^;]*[[:space:]]quic([[:space:];]|$)' /tmp/nginx-effective.conf; then
+            echo "::error::HTTP/3 must stay disabled in this static image"
+            exit 1
+          fi
+
       - uses: docker/build-push-action@v6
         with:
           context: .

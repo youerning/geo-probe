@@ -29,7 +29,10 @@ RUN --mount=type=cache,target=/app/.next/cache pnpm build
 
 # ---------- 运行阶段 ----------
 # 纯静态站点：只有 nginx 和 out/，没有 Node、没有后端、没有任何密钥。
-FROM nginx:alpine AS runtime
+# 固定 nginx 版本：浮动 tag 会让镜像的安全性取决于构建时间。
+# 1.31.9 修复 nginx2root（CVE-2026-123007/123633/123634/121810/113425）
+# 和 CVE-2026-125283；升级 nginx 时同步改这里并重建。
+FROM nginx:1.31.9-alpine AS runtime
 
 LABEL org.opencontainers.image.title="GEO Probe" \
       org.opencontainers.image.description="开源的 GEO 品牌提及检测工具：批量向 DeepSeek 提问，检测 AI 回答里有没有出现你的品牌。纯静态、无后端、数据只存浏览器。" \
