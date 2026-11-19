@@ -3,7 +3,7 @@
 # ---------- 构建阶段 ----------
 # 产物（HTML/JS/CSS）与 CPU 架构无关，所以固定用 BUILDPLATFORM 构建一次。
 # 双架构发布时不会在 QEMU 模拟的 arm64 里再跑一遍 Next.js 构建。
-FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:26-alpine AS builder
 
 ENV NEXT_TELEMETRY_DISABLED=1 \
     COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
